@@ -1,0 +1,30 @@
+{
+  "name": "@flagbridge/sdk-react",
+  "version": "0.1.0",
+  "description": "FlagBridge React SDK",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["feature-flags", "flagbridge", "react", "sdk"],
+  "author": "FlagBridge",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flagbridge/flagbridge",
+    "directory": "packages/sdk-react"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@flagbridge/sdk-node": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "typescript": "^5.8.3"
+  }
+}
