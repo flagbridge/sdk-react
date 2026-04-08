@@ -1,30 +1,57 @@
 {
   "name": "@flagbridge/sdk-react",
   "version": "0.1.0",
-  "description": "FlagBridge React SDK",
-  "main": "dist/index.js",
+  "description": "FlagBridge React SDK — feature flags with real-time updates",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
-  "keywords": ["feature-flags", "flagbridge", "react", "sdk"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "feature-flags",
+    "flagbridge",
+    "react",
+    "sdk",
+    "sse"
+  ],
   "author": "FlagBridge",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/flagbridge/flagbridge",
-    "directory": "packages/sdk-react"
+    "url": "https://github.com/flagbridge/sdk-react"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
-  },
-  "dependencies": {
-    "@flagbridge/sdk-node": "workspace:*"
+    "react": ">=18"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.2",
-    "typescript": "^5.8.3"
+    "jsdom": "^26.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.3"
   }
 }

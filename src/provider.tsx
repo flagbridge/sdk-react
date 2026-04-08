@@ -1,30 +1,98 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
-import { FlagBridge, type FlagBridgeConfig } from "@flagbridge/sdk-node";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import type { FlagBridgeConfig, FlagBridgeContextValue } from "./types";
+import { connectSSE, fetchAllFlags, fetchFlag } from "./client";
 
-const FlagBridgeContext = createContext<FlagBridge | null>(null);
+export const FlagBridgeContext = createContext<FlagBridgeContextValue | null>(
+  null,
+);
+
+export interface FlagBridgeProviderProps extends FlagBridgeConfig {
+  children: ReactNode;
+}
 
 export function FlagBridgeProvider({
-  config,
   children,
-}: {
-  config: FlagBridgeConfig;
-  children: ReactNode;
-}) {
-  const client = new FlagBridge(config);
+  ...config
+}: FlagBridgeProviderProps) {
+  const [flags, setFlags] = useState<Record<string, unknown>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const configRef = useRef(config);
+  configRef.current = config;
+
+  const handleError = useCallback((err: Error) => {
+    setError(err);
+    configRef.current.onError?.(err);
+  }, []);
+
+  const refresh = useCallback(() => {
+    fetchAllFlags(configRef.current)
+      .then((result) => {
+        setFlags(result);
+        setError(null);
+      })
+      .catch(handleError);
+  }, [handleError]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAllFlags(config)
+      .then((result) => {
+        if (!cancelled) {
+          setFlags(result);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          setIsLoading(false);
+          handleError(error);
+        }
+      });
+
+    const disconnect = connectSSE(
+      config,
+      (flagKey) => {
+        fetchFlag(config, flagKey)
+          .then((value) => {
+            if (!cancelled) {
+              setFlags((prev) => ({ ...prev, [flagKey]: value }));
+            }
+          })
+          .catch(handleError);
+      },
+      handleError,
+    );
+
+    return () => {
+      cancelled = true;
+      disconnect();
+    };
+    // Re-connect when these change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.apiKey, config.apiUrl, config.environment, config.project]);
+
+  const value: FlagBridgeContextValue = {
+    flags,
+    isLoading,
+    error,
+    refresh,
+  };
 
   return (
-    <FlagBridgeContext.Provider value={client}>
+    <FlagBridgeContext.Provider value={value}>
       {children}
     </FlagBridgeContext.Provider>
   );
-}
-
-export function useFlagBridge(): FlagBridge {
-  const client = useContext(FlagBridgeContext);
-  if (!client) {
-    throw new Error("useFlagBridge must be used within a FlagBridgeProvider");
-  }
-  return client;
 }
