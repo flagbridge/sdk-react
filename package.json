@@ -2,7 +2,7 @@
   "name": "@flagbridge/sdk-react",
   "version": "0.1.0",
   "description": "FlagBridge React SDK — feature flags with real-time updates",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
@@ -13,7 +13,7 @@
       },
       "require": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/index.cjs"
+        "default": "./dist/index.js"
       }
     }
   },
@@ -26,7 +26,8 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build && pnpm typecheck"
   },
   "keywords": [
     "feature-flags",
